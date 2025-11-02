@@ -50,7 +50,7 @@ if [[ "${_os}" == "Android" ]]; then
   _node="nodejs-lts"
 fi
 if [[ ! -v "_npm" ]]; then
-  _npm="true"
+  _npm="false"
 fi
 if [[ ! -v "_git_http" ]]; then
   _git_http="github"
@@ -69,11 +69,19 @@ if [[ ! -v "_docs" ]]; then
     _docs="false"
   fi
 fi
-_archive_format="tgz"
 if [[ ! -v "${_archive_format}" ]]; then
-  if [[ "${_npm}" == "false" ]]; then
-    if [[ "${_git_http}" == "github" ]]; then
-      _archive_format="zip"
+  if [[ "${_npm}" == "true" ]]; then
+    _archive_format="tgz"
+  elif [[ "${_npm}" == "false" ]]; then
+    if [[ "${_evmfs}" == "true" ]]; then
+      if [[ "${_git}" == "true" ]]; then
+        _archive_format="bundle"
+      fi
+    elif [[ "${_evmfs}" == "false" ]]; then
+      _archive_format="tar.gz"
+      if [[ "${_git_http}" == "github" ]]; then
+        _archive_format="zip"
+      fi
     fi
   fi
 fi
@@ -126,6 +134,11 @@ optdepends=(
 makedepends=(
   "npm"
 )
+if [[ "${_git}" == "true" ]]; then
+  makedepends+=(
+    "git"
+  )
+fi
 if [[ "${_npm}" == "false" ]]; then
   makedepends+=(
     "${_node}-rollup"
@@ -144,8 +157,12 @@ _evmfs_ns="0x6E5163fC4BFc1511Dbe06bB605cc14a3e462332b"
 _evmfs_network="100"
 _evmfs_address="0x69470b18f8b8b5f92b48f6199dcb147b4be96571"
 _evmfs_dir="evmfs://${_evmfs_network}/${_evmfs_address}/${_evmfs_ns}"
+_bundle_uri="${_evmfs_dir}/${_bundle_sum}"
+_bundle_src="${_tarfile}::${_evmfs_npm_uri}"
 _evmfs_npm_uri="${_evmfs_dir}/${_npm_sum}"
 _evmfs_src="${_tarfile}::${_evmfs_npm_uri}"
+_bundle_sig_uri="${_evmfs_dir}/${_bundle_sig_sum}"
+_bundle_sig_src="${_tarfile}.sig::${_bundle_sig_uri}"
 _npm_sig_uri="${_evmfs_dir}/${_npm_sig_sum}"
 _npm_sig_src="${_tarfile}.sig::${_npm_sig_uri}"
 _npm_http="http://registry.npmjs.org"
@@ -189,13 +206,56 @@ noextract=(
   "${_tarfile}"
 )
 
+prepare() {
+  if [[ "${_evmfs}" == "true" && \
+        "${_git}" == "true" ]]; then
+    git \
+      init \
+      "${srcdir}/${_tarname}"
+    cd \
+      "${_tarname}"
+    git \
+      "${_git_opts[@]}" \
+      remote \
+        add \
+          origin \
+          "${srcdir}/${_tarfile}"
+    git \
+      "${_git_opts[@]}" \
+      pull \
+        origin \
+          "main"
+  fi
+}
+
+build() {
+  local \
+    _rollup_opts=()
+  _rollup_opts+=(
+    --config
+      "rollup.config.mjs"
+  )
+  cd \
+    "${_tarname}"
+  if [[ "${_npm}" == "false" ]]; then
+    rollup \
+     "${_rollup_opts[@]}"
+    npm \
+      pack
+    ls
+  fi
+}
+
 package_nodejs-happy-opfs() {
   local \
     _npm_options=() \
-    _find_opts=()
+    _find_opts=() \
+    _rollup_opts=()
+  _rollup_opts+=(
+    --config
+      "rollup.config.mjs"
+  )
   if [[ "${_npm}" == "true" ]]; then
-    echo
-  elif [[ "${_npm}" == "true" ]]; then
     _npm_options=(
       -g 
       # --user 
