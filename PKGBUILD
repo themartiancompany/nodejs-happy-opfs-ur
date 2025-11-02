@@ -56,7 +56,18 @@ if [[ ! -v "_git_http" ]]; then
   _git_http="github"
 fi
 if [[ ! -v "_git" ]]; then
-  _git_http="true"
+  if [[ "${_npm}" == "true" ]]; then
+    _git="false"
+  elif [[ "${_npm}" == "false" ]]; then
+    _git="true"
+  fi
+fi
+if [[ ! -v "_docs" ]]; then
+  if [[ "${_npm}" == "false" ]]; then
+    _docs="true"
+  elif [[ "${_npm}" == "true" ]]; then
+    _docs="false"
+  fi
 fi
 _archive_format="tgz"
 if [[ ! -v "${_archive_format}" ]]; then
@@ -71,6 +82,11 @@ pkgbase="${_node}-${_pkg}"
 pkgname=(
   "${pkgbase}"
 )
+if [[ "${_docs}" == "true" ]]; then
+  pkgname+=(
+    "${pkgbase}-examples"
+  )
+fi
 _pkgdesc=(
   "Browser-compatible fs module"
   "based on OPFS, which references"
@@ -95,6 +111,17 @@ depends=(
 )
 provides=(
   "${_pkg}=${pkgver}"
+)
+_nodejs_happy_opfs_examples_optdepends=(
+  "${pkgbase}-examples:"
+    "Module usage examples."
+)
+_nodejs_happy_opfs_examples_ref_optdepends=(
+  "${pkgbase}:"
+    "Package this examples refer to."
+)
+optdepends=(
+  "${_nodejs_happy_opfs_examples_optdepends[*]}"
 )
 makedepends=(
   "npm"
@@ -162,37 +189,64 @@ noextract=(
   "${_tarfile}"
 )
 
-package_nodejs-serve() {
+package_nodejs-happy-opfs() {
   local \
     _npm_options=() \
     _find_opts=()
-  _npm_options=(
-    -g 
-    # --user 
-    #   root 
-    --prefix 
-      "${pkgdir}/usr"
+  if [[ "${_npm}" == "true" ]]; then
+    echo
+  elif [[ "${_npm}" == "true" ]]; then
+    _npm_options=(
+      -g 
+      # --user 
+      #   root 
+      --prefix 
+        "${pkgdir}/usr"
+    )
+    find_opts+=(
+      -type
+        "d"
+      -exec
+        chmod
+          755
+          '{}'
+          +
+    )
+    npm \
+      install \
+      "${_npm_options[@]}" \
+      "${srcdir}/${_pkg}-${pkgver}.tgz"
+    rm \
+      -fr \
+        "${pkgdir}/usr/etc"
+    # Fix npm derp
+    find \
+      "${pkgdir}/usr" \
+      "${_find_opts[@]}"
+  fi
+}
+
+package_nodejs-happy-opfs-examples() {
+  local \
+    _bin \
+    _module_dir \
+    _usr
+  depends=()
+  optdepends=(
+    "${_nodejs_happy_opfs_examples_ref_optdepends[*]}"
   )
-  find_opts+=(
-    -type
-      "d"
-    -exec
-      chmod
-        755
-        '{}'
-        +
-  )
-  npm \
-    install \
-    "${_npm_options[@]}" \
-    "${srcdir}/${_pkg}-${pkgver}.tgz"
-  rm \
-    -fr \
-      "${pkgdir}/usr/etc"
-  # Fix npm derp
-  find \
-    "${pkgdir}/usr" \
-    "${_find_opts[@]}"
+  _bin="$(
+    dirname \
+      "$(command \
+           -v \
+           "env")")"
+  _usr="$(
+    dirname \
+      "${_bin}")"
+  _module_dir="${_usr}/lib/node_modules/${_pkg}"
+  cp \
+    "${_tarname}/examples" \
+    "${pkgdir}/${_module_dir}"
 }
 
 # vim:set sw=2 sts=-1 et:
