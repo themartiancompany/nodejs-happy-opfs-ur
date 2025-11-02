@@ -143,6 +143,7 @@ if [[ "${_npm}" == "false" ]]; then
   makedepends+=(
     "node-run"
     "${_node}-rollup"
+    "${_node}-rollup-plugin-dts"
   )
 fi
 _tarname="${_pkg}-${pkgver}"
@@ -244,14 +245,15 @@ prepare() {
 build() {
   local \
     _rollup_opts=() \
-    _node_run_opts=() \
-    _rollup
-  _rollup="$(
-    command \
-      -v \
-      "rollup")"
-  _node_run_opts+=(
-    -v
+    _files=()
+  _files+=(
+    "LICENSE"
+    "README.cn.md"
+    "README.md"
+    "dist"
+    "docs"
+    "package.json"
+    "src"
   )
   _rollup_opts+=(
     --config
@@ -260,14 +262,24 @@ build() {
   cd \
     "${_tarname}"
   if [[ "${_npm}" == "false" ]]; then
-    # node-run \
-    #   "${_node_opts[@]}" \
-    npx \
-      "rollup" \ # "${_rollup}" \
-       "${_rollup_opts[@]}"
+    npm \
+      install
+    rollup \
+      "${_rollup_opts[@]}"
+    mkdir \
+      -p \
+      "build"
+    cp \
+      -r \
+      "${_files[@]}" \
+      "build"
+    cd \
+      "build"
     npm \
       pack
-    ls
+    mv \
+      "${_pkg}-${pkgver}.tgz" \
+      "${srcdir}"
   fi
 }
 
