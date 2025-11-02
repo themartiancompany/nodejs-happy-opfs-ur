@@ -55,6 +55,9 @@ fi
 if [[ ! -v "_git_http" ]]; then
   _git_http="github"
 fi
+if [[ ! -v "_git" ]]; then
+  _git_http="true"
+fi
 _archive_format="tgz"
 if [[ ! -v "${_archive_format}" ]]; then
   if [[ "${_npm}" == "false" ]]; then
@@ -85,7 +88,7 @@ _http="https://${_git_http}.com"
 _ns="JiangJie"
 url="${_http}/${_ns}/${_pkg}"
 license=(
-  'MIT'
+  'GPL3'
 )
 depends=(
   "${_node}"
@@ -96,10 +99,17 @@ provides=(
 makedepends=(
   "npm"
 )
+if [[ "${_npm}" == "false" ]]; then
+  makedepends+=(
+    "${_node}-rollup"
+  )
+fi
 _tarname="${_pkg}-${pkgver}"
 _tarfile="${_tarname}.${_archive_format}"
-_sum="954b7c47c94833a8bfdbc42283296ed67e8a7c23ecbb55f57ca1f625eb2f8a1f"
-_sig_sum="4e1e1884a4cb8ca40cabb87e0af9ae1e578a12a6b65c7056e4c88acb12a1ecfd"
+_bundle_sum="e7bf622ac1afab6ebdd14f6ff621874d24aca9e4899f1fa7616a84faea4ed81c"
+_bundle_sig_sum="bdf198594304ccfd8d262ffa4ff5f1a0511ee198a73b1c74ed227f346eda4998"
+_npm_sum="954b7c47c94833a8bfdbc42283296ed67e8a7c23ecbb55f57ca1f625eb2f8a1f"
+_npm_sig_sum="4e1e1884a4cb8ca40cabb87e0af9ae1e578a12a6b65c7056e4c88acb12a1ecfd"
 # Dvorak
 _evmfs_ns="0x87003Bd6C074C713783df04f36517451fF34CBEf"
 # Truocolo
@@ -107,15 +117,27 @@ _evmfs_ns="0x6E5163fC4BFc1511Dbe06bB605cc14a3e462332b"
 _evmfs_network="100"
 _evmfs_address="0x69470b18f8b8b5f92b48f6199dcb147b4be96571"
 _evmfs_dir="evmfs://${_evmfs_network}/${_evmfs_address}/${_evmfs_ns}"
-_evmfs_uri="${_evmfs_dir}/${_sum}"
-_evmfs_src="${_tarfile}::${_evmfs_uri}"
-_sig_uri="${_evmfs_dir}/${_sig_sum}"
-_sig_src="${_tarfile}.sig::${_sig_uri}"
+_evmfs_npm_uri="${_evmfs_dir}/${_npm_sum}"
+_evmfs_src="${_tarfile}::${_evmfs_npm_uri}"
+_npm_sig_uri="${_evmfs_dir}/${_npm_sig_sum}"
+_npm_sig_src="${_tarfile}.sig::${_npm_sig_uri}"
 _npm_http="http://registry.npmjs.org"
 source=()
 sha256sums=()
 if [[ "${_evmfs}" == "true" ]]; then
-  _uri="${_evmfs_uri}"
+  if [[ "${_npm}" == "true" ]]; then
+    _uri="${_evmfs_npm_uri}"
+    _sum="${_evmfs_npm_sum}"
+    _sig_src="${_evmfs_npm_uri}"
+    _sig_sum="${_npm_sig_sum}"
+  elif [[ "${_npm}" == "false" ]]; then
+    if [[ "${_git}" == "true" ]]; then
+      _uri="${_bundle_uri}"
+      _sum="${_bundle_sum}"
+      _sig_src="${_bundle_sig_src}"
+      _sig_sum="${_bundle_sig_sum}"
+    fi
+  fi
   source+=(
     "${_sig_src}"
   )
@@ -125,6 +147,8 @@ if [[ "${_evmfs}" == "true" ]]; then
 elif [[ "${_evmfs}" == "false" ]]; then
   if [[ "${_npm}" == "true" ]]; then
     _uri="${_npm_http}/${_pkg}/-/${_tarfile}"
+  elif [[ "${_npm}" == "false" ]]; then
+    _uri="${url}"
   fi
 fi
 _src="${_tarfile}::${_uri}"
