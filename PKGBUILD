@@ -292,35 +292,33 @@ package_nodejs-happy-opfs() {
     --config
       "rollup.config.mjs"
   )
-  if [[ "${_npm}" == "true" ]]; then
-    _npm_options=(
-      -g 
-      # --user 
-      #   root 
-      --prefix 
-        "${pkgdir}/usr"
-    )
-    find_opts+=(
-      -type
-        "d"
-      -exec
-        chmod
-          755
-          '{}'
-          +
-    )
-    npm \
-      install \
-      "${_npm_options[@]}" \
-      "${srcdir}/${_pkg}-${pkgver}.tgz"
-    rm \
-      -fr \
-        "${pkgdir}/usr/etc"
-    # Fix npm derp
-    find \
-      "${pkgdir}/usr" \
-      "${_find_opts[@]}"
-  fi
+  _npm_options=(
+    -g 
+    # --user 
+    #   root 
+    --prefix 
+      "${pkgdir}/usr"
+  )
+  find_opts+=(
+    -type
+      "d"
+    -exec
+      chmod
+        755
+        '{}'
+        +
+  )
+  npm \
+    install \
+    "${_npm_options[@]}" \
+    "${srcdir}/${_pkg}-${pkgver}.tgz"
+  rm \
+    -fr \
+      "${pkgdir}/usr/etc"
+  # Fix npm derp
+  find \
+    "${pkgdir}/usr" \
+    "${_find_opts[@]}"
 }
 
 package_nodejs-happy-opfs-examples() {
@@ -341,9 +339,13 @@ package_nodejs-happy-opfs-examples() {
     dirname \
       "${_bin}")"
   _module_dir="${_usr}/lib/node_modules/${_pkg}"
+  install \
+    -vdm755 \
+    "${pkgdir}${_module_dir}"
   cp \
-    "${_tarname}/examples" \
-    "${pkgdir}/${_module_dir}"
+    -r \
+    "${_tarname}/tests" \
+    "${pkgdir}${_module_dir}"
 }
 
 # vim:set sw=2 sts=-1 et:
