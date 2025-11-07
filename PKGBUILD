@@ -299,7 +299,7 @@ build() {
     npm \
       pack
     mv \
-      "${_pkg}-${pkgver}.tgz" \
+      "${_ns}-${_pkg}-${pkgver}.tgz" \
       "${srcdir}"
   fi
 }
@@ -332,7 +332,7 @@ package_nodejs-happy-opfs() {
   npm \
     install \
     "${_npm_options[@]}" \
-    "${srcdir}/${_pkg}-${pkgver}.tgz"
+    "${srcdir}/${_ns}-${_pkg}-${pkgver}.tgz"
   rm \
     -fr \
       "${pkgdir}/usr/etc"
