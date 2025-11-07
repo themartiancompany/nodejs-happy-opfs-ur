@@ -59,7 +59,7 @@ if [[ ! -v "_git" ]]; then
   if [[ "${_npm}" == "true" ]]; then
     _git="false"
   elif [[ "${_npm}" == "false" ]]; then
-    _git="true"
+    _git="false"
   fi
 fi
 if [[ ! -v "_docs" ]]; then
