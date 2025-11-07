@@ -119,6 +119,7 @@ license=(
 )
 depends=(
   "${_node}"
+  "${_node}-std"
 )
 provides=(
   "${_pkg}=${pkgver}"
@@ -135,6 +136,7 @@ optdepends=(
   "${_nodejs_happy_opfs_examples_optdepends[*]}"
 )
 makedepends=(
+  "${_node}-std"
   "npm"
 )
 if [[ "${_git}" == "true" ]]; then
