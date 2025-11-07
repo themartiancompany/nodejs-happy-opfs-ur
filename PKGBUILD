@@ -103,13 +103,14 @@ _pkgdesc=(
 )
 pkgdesc="${_pkgdesc[*]}"
 pkgver=1.8.7
-_commit="17bbfff4add818aa762a9bfceca10d29143e2fb8"
+_commit="5df7c3eae4afcbcb2deb4865032d1ae8717b882c"
 pkgrel=1
 arch=(
   'any'
 )
 _http="https://${_git_http}.com"
 _ns="JiangJie"
+_ns="themartiancompany"
 url="${_http}/${_ns}/${_pkg}"
 license=(
   'GPL3'
@@ -148,6 +149,8 @@ if [[ "${_npm}" == "false" ]]; then
 fi
 _tarname="${_pkg}-${pkgver}"
 _tarfile="${_tarname}.${_archive_format}"
+_sum="c260bc56e3eb822f96ea10bdef55b4158a7cc5b4ec55503f61f1cdff367e407a"
+_sig_sum="bca05e0d77e803cbfbf8304192b62964159fe71e6bcb8023bcae5954eab6258a"
 _bundle_sum="e7bf622ac1afab6ebdd14f6ff621874d24aca9e4899f1fa7616a84faea4ed81c"
 _bundle_sig_sum="bdf198594304ccfd8d262ffa4ff5f1a0511ee198a73b1c74ed227f346eda4998"
 _npm_sum="954b7c47c94833a8bfdbc42283296ed67e8a7c23ecbb55f57ca1f625eb2f8a1f"
@@ -159,10 +162,14 @@ _evmfs_ns="0x6E5163fC4BFc1511Dbe06bB605cc14a3e462332b"
 _evmfs_network="100"
 _evmfs_address="0x69470b18f8b8b5f92b48f6199dcb147b4be96571"
 _evmfs_dir="evmfs://${_evmfs_network}/${_evmfs_address}/${_evmfs_ns}"
+_evmfs_uri="${_evmfs_dir}/${_sum}"
+_evmfs_src="${_tarfile}::${_evmfs_uri}"
 _bundle_uri="${_evmfs_dir}/${_bundle_sum}"
 _bundle_src="${_tarfile}::${_evmfs_npm_uri}"
 _evmfs_npm_uri="${_evmfs_dir}/${_npm_sum}"
-_evmfs_src="${_tarfile}::${_evmfs_npm_uri}"
+_evmfs_npm_src="${_tarfile}::${_evmfs_npm_uri}"
+_evmfs_sig_uri="${_evmfs_dir}/${_sig_sum}"
+_evmfs_sig_src="${_tarfile}.sig::${_sig_uri}"
 _bundle_sig_uri="${_evmfs_dir}/${_bundle_sig_sum}"
 _bundle_sig_src="${_tarfile}.sig::${_bundle_sig_uri}"
 _npm_sig_uri="${_evmfs_dir}/${_npm_sig_sum}"
@@ -182,6 +189,9 @@ if [[ "${_evmfs}" == "true" ]]; then
       _sum="${_bundle_sum}"
       _sig_src="${_bundle_sig_src}"
       _sig_sum="${_bundle_sig_sum}"
+    elif [[ "${_git}" == "false" ]]; then
+      _uri="${_evmfs_uri}"
+      _sig_src="${_evmfs_sig_src}"
     fi
   fi
   source+=(
@@ -204,9 +214,11 @@ source+=(
 sha256sums+=(
   "${_sum}"
 )
-noextract=(
-  "${_tarfile}"
-)
+if [[ "${_npm}" == "true" ]]; then
+  noextract=(
+    "${_tarfile}"
+  )
+fi
 validpgpkeys=(
   # Truocolo
   #   <truocolo@aol.com>
