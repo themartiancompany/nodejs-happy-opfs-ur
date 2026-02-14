@@ -132,7 +132,12 @@ _nodejs_happy_opfs_examples_ref_optdepends=(
   "${pkgbase}:"
     "Package this examples refer to."
 )
+_libcrash_js_optdepends=(
+  "Bash-like Javascript library written"
+  "using Happy OPFS."
+)
 optdepends=(
+  "${_libcrash_js_optdepends[*]}"
   "${_nodejs_happy_opfs_examples_optdepends[*]}"
 )
 makedepends=(
