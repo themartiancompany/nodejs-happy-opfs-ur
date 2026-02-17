@@ -221,7 +221,17 @@ elif [[ "${_evmfs}" == "false" ]]; then
   if [[ "${_npm}" == "true" ]]; then
     _uri="${_npm_http}/@${_ns}/${_pkg}/-/${_tarfile}"
   elif [[ "${_npm}" == "false" ]]; then
-    _uri="${url}"
+    if [[ "${_tag_name}" == 'pkgver' ]]; then
+      if [[ "${_git_http}" == "gitlab" ]]; then
+        _uri="${url}/archive/refs/tags/${_tag}.${_archive_format}"
+      fi
+    elif [[ "${_tag_name}" == "commit" ]]; then
+      if [[ "${_git_http}" == "github" ]]; then
+        _uri="${url}/archive/${_commit}.${_archive_format}"
+      elif [[ "${_git_http}" == "gitlab" ]]; then
+        _uri="${url}/-/archive/${_commit}/${_tarname}.${_archive_format}"
+      fi
+    fi
   fi
 fi
 _src="${_tarfile}::${_uri}"
