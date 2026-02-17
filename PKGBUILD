@@ -133,6 +133,7 @@ _nodejs_happy_opfs_examples_ref_optdepends=(
     "Package this examples refer to."
 )
 _libcrash_js_optdepends=(
+  "libcrash-js:"
   "Bash-like Javascript library written"
   "using Happy OPFS."
 )
