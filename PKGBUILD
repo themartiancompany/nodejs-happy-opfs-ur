@@ -181,9 +181,9 @@ if [[ "${_os}" == "Android" ]]; then
   makedepends+=(
     "liblmdb"
   )
-  depends+=(
-    "liblmdb"
-  )
+  # depends+=(
+  #   "liblmdb"
+  # )
 fi
 if [[ "${_npm}" == "true" ]]; then
   _tag="${pkgver}"
