@@ -249,7 +249,7 @@ if [[ "${_evmfs}" == "true" ]]; then
   )
 elif [[ "${_evmfs}" == "false" ]]; then
   if [[ "${_npm}" == "true" ]]; then
-    _uri="${_npm_http}/@${_ns}/${_pkg}/-/${_npm_tarfile}"
+    _uri="${_npm_http}/@${_ns}/${_pkg}/-/${_tarfile}"
   elif [[ "${_npm}" == "false" ]]; then
     if [[ "${_tag_name}" == 'pkgver' ]]; then
       if [[ "${_git_http}" == "gitlab" ]]; then
@@ -263,6 +263,9 @@ elif [[ "${_evmfs}" == "false" ]]; then
       fi
     fi
   fi
+fi
+if [[ "${_npm}" == "true" ]]; then
+  _tarfile="${_npm_tarfile}"
 fi
 _src="${_tarfile}::${_uri}"
 source+=(
