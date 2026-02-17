@@ -326,9 +326,9 @@ build() {
     --config
       "rollup.config.mjs"
   )
-  cd \
-    "${_tarname}"
   if [[ "${_npm}" == "false" ]]; then
+    cd \
+      "${_tarname}"
     npm \
       install
     rollup \
