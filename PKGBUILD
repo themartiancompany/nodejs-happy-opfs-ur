@@ -192,8 +192,10 @@ elif [[ "${_npm}" == "false" ]]; then
   _tag="${_commit}"
   _tag_name="commit"
 fi
-_tarname="${_ns}-${_pkg}-${_tag}"
+_tarname="${_pkg}-${_tag}"
+_npm_tarname="${_ns}-${_pkg}-${_tag}"
 _tarfile="${_tarname}.${_archive_format}"
+_npm_tarfile="${_npm_tarname}.${_archive_format}"
 _sum="c260bc56e3eb822f96ea10bdef55b4158a7cc5b4ec55503f61f1cdff367e407a"
 _sig_sum="bca05e0d77e803cbfbf8304192b62964159fe71e6bcb8023bcae5954eab6258a"
 _bundle_sum="e7bf622ac1afab6ebdd14f6ff621874d24aca9e4899f1fa7616a84faea4ed81c"
@@ -247,7 +249,7 @@ if [[ "${_evmfs}" == "true" ]]; then
   )
 elif [[ "${_evmfs}" == "false" ]]; then
   if [[ "${_npm}" == "true" ]]; then
-    _uri="${_npm_http}/@${_ns}/${_pkg}/-/${_tarfile}"
+    _uri="${_npm_http}/@${_ns}/${_pkg}/-/${_npm_tarfile}"
   elif [[ "${_npm}" == "false" ]]; then
     if [[ "${_tag_name}" == 'pkgver' ]]; then
       if [[ "${_git_http}" == "gitlab" ]]; then
