@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0
 
 #    ----------------------------------------------------------------------
-#    Copyright © 2024, 2025  Pellegrino Prevete
+#    Copyright © 2024, 2025, 2026  Pellegrino Prevete
 #
 #    All rights reserved
 #    ----------------------------------------------------------------------
@@ -33,7 +33,7 @@
 _os="$( \
   uname \
     -o)"
-_evmfs_available="$( \
+_evmfs_available="$(
   command \
     -v \
     "evmfs" || \
@@ -69,7 +69,7 @@ if [[ ! -v "_docs" ]]; then
     _docs="false"
   fi
 fi
-if [[ ! -v "${_archive_format}" ]]; then
+if [[ ! -v "_archive_format" ]]; then
   if [[ "${_npm}" == "true" ]]; then
     _archive_format="tgz"
   elif [[ "${_npm}" == "false" ]]; then
@@ -181,7 +181,7 @@ _evmfs_dir="evmfs://${_evmfs_network}/${_evmfs_address}/${_evmfs_ns}"
 _evmfs_uri="${_evmfs_dir}/${_sum}"
 _evmfs_src="${_tarfile}::${_evmfs_uri}"
 _bundle_uri="${_evmfs_dir}/${_bundle_sum}"
-_bundle_src="${_tarfile}::${_evmfs_npm_uri}"
+_bundle_src="${_tarfile}::${_bundle_uri}"
 _evmfs_npm_uri="${_evmfs_dir}/${_npm_sum}"
 _evmfs_npm_src="${_tarfile}::${_evmfs_npm_uri}"
 _evmfs_sig_uri="${_evmfs_dir}/${_sig_sum}"
