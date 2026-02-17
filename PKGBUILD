@@ -139,7 +139,7 @@ license=(
 )
 depends=(
   "${_node}"
-  "${_node}-std"
+  "nodejs-std"
 )
 provides=(
   "${_pkg}=${pkgver}"
