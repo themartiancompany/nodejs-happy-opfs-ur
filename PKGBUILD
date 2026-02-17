@@ -30,7 +30,7 @@
 #   Filipe Bertelli
 #     <filipebertelli@tutanota.com>
 
-_os="$( \
+_os="$(
   uname \
     -o)"
 _evmfs_available="$(
@@ -51,6 +51,9 @@ if [[ "${_os}" == "Android" ]]; then
 fi
 if [[ ! -v "_npm" ]]; then
   _npm="false"
+  if [[ "${_os}" == "Android" ]]; then
+    _npm="true"
+  fi
 fi
 if [[ ! -v "_git_http" ]]; then
   _git_http="github"
@@ -155,6 +158,14 @@ if [[ "${_npm}" == "false" ]]; then
     "node-run"
     "${_node}-rollup"
     "${_node}-rollup-plugin-dts"
+  )
+fi
+if [[ "${_os}" == "Android" ]]; then
+  makedepends+=(
+    "liblmdb"
+  )
+  depends+=(
+    "liblmdb"
   )
 fi
 if [[ "${_npm}" == "true" ]]; then
