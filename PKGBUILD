@@ -88,7 +88,7 @@ if [[ ! -v "_archive_format" ]]; then
   fi
 fi
 _pkg=happy-opfs
-pkgbase="${_node}-${_pkg}"
+pkgbase="nodejs-${_pkg}"
 pkgname=(
   "${pkgbase}"
 )
