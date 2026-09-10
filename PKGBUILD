@@ -1,28 +1,39 @@
 # SPDX-License-Identifier: AGPL-3.0
 
-#    -----------------------------------------------------
-#    Copyright © 2024, 2025, 2026  Pellegrino Prevete
+#    ---------------------------------
+#    Copyright © 2024, 2025, 2026
+#                Pellegrino Prevete
 #
 #    All rights reserved
-#    -----------------------------------------------------
+#    ---------------------------------
 #
-#    This program is free software: you can redistribute
-#    it and/or modify it under the terms of the
-#    GNU Affero General Public License as published by
-#    the Free Software Foundation, either version 3 of
-#    the License, or (at your option) any later version.
+#    This program is free software:
+#    you can redistribute it and/or
+#    modify it under the terms of
+#    the GNU Affero General Public
+#    License as published by
+#    the Free Software Foundation,
+#    either version 3 of the License,
+#    or (at your option)
+#    any later version.
 #
-#    This program is distributed in the hope that it
-#    will be useful, but WITHOUT ANY WARRANTY;
-#    without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#    See the GNU Affero General Public License for
-#    more details.
-#
-#    You should have received a copy of the
+#    This program is distributed in
+#    the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY;
+#    without even the implied warranty
+#    of MERCHANTABILITY or FITNESS
+#    FOR A PARTICULAR PURPOSE.
+#    See the
 #    GNU Affero General Public License
+#    for more details.
+#
+#    You should have received a copy
+#    of the GNU Affero General
+#    Public License
 #    along with this program.
-#    If not, see <https://www.gnu.org/licenses/>.
+#    If not, see
+#    <https://www.gnu.org/licenses/>.
+
 
 # Maintainers:
 #   Truocolo
@@ -34,10 +45,10 @@
 #   Filipe Bertelli
 #     <filipebertelli@tutanota.com>
 
-_os="$( \
+_os="$(
   uname \
     -o)"
-_evmfs_available="$( \
+_evmfs_available="$(
   command \
     -v \
     "evmfs" || \
@@ -51,10 +62,30 @@ if [[ ! -v "_evmfs" ]]; then
 fi
 _node="nodejs"
 if [[ "${_os}" == "Android" ]]; then
-  _node="nodejs-lts"
+  # This will have to be removed when we
+  # will have non-termux missing-provides bugged
+  # life and dogeos android nodejs and nodejs-lts
+  # builds.
+  _node_lts="$( \
+    ( pacman \
+       -Q \
+       "nodejs-lts" \
+       2>"/dev/null" || \
+      pacman \
+        -Q \
+        "nodejs" ) | \
+      awk \
+        '{print $1}' \
+      2>/dev/null)"
+  if [[ "${_node_lts}" != "" ]]; then
+    _node="nodejs-lts"
+  fi
 fi
 if [[ ! -v "_npm" ]]; then
   _npm="false"
+  if [[ "${_os}" == "Android" ]]; then
+    _npm="true"
+  fi
 fi
 if [[ ! -v "_git_http" ]]; then
   _git_http="github"
@@ -73,7 +104,7 @@ if [[ ! -v "_docs" ]]; then
     _docs="false"
   fi
 fi
-if [[ ! -v "${_archive_format}" ]]; then
+if [[ ! -v "_archive_format" ]]; then
   if [[ "${_npm}" == "true" ]]; then
     _archive_format="tgz"
   elif [[ "${_npm}" == "false" ]]; then
@@ -92,7 +123,7 @@ if [[ ! -v "${_archive_format}" ]]; then
   fi
 fi
 _pkg=happy-opfs
-pkgbase="${_node}-${_pkg}"
+pkgbase="nodejs-${_pkg}"
 pkgname=(
   "${pkgbase}"
 )
@@ -137,8 +168,9 @@ _nodejs_happy_opfs_examples_ref_optdepends=(
     "Package this examples refer to."
 )
 _libcrash_js_optdepends=(
-  "Bash-like Javascript library written"
-  "using Happy OPFS."
+  "libcrash-js:"
+    "Bash-like Javascript library"
+    "written using Happy OPFS."
 )
 optdepends=(
   "${_libcrash_js_optdepends[*]}"
@@ -160,6 +192,14 @@ if [[ "${_npm}" == "false" ]]; then
     "${_node}-rollup-plugin-dts"
   )
 fi
+if [[ "${_os}" == "Android" ]]; then
+  makedepends+=(
+    "liblmdb"
+  )
+  # depends+=(
+  #   "liblmdb"
+  # )
+fi
 if [[ "${_npm}" == "true" ]]; then
   _tag="${pkgver}"
   _tag_name="pkgver"
@@ -168,7 +208,9 @@ elif [[ "${_npm}" == "false" ]]; then
   _tag_name="commit"
 fi
 _tarname="${_pkg}-${_tag}"
+_npm_tarname="${_ns}-${_pkg}-${_tag}"
 _tarfile="${_tarname}.${_archive_format}"
+_npm_tarfile="${_npm_tarname}.${_archive_format}"
 _sum="c260bc56e3eb822f96ea10bdef55b4158a7cc5b4ec55503f61f1cdff367e407a"
 _sig_sum="bca05e0d77e803cbfbf8304192b62964159fe71e6bcb8023bcae5954eab6258a"
 _bundle_sum="e7bf622ac1afab6ebdd14f6ff621874d24aca9e4899f1fa7616a84faea4ed81c"
@@ -185,7 +227,7 @@ _evmfs_dir="evmfs://${_evmfs_network}/${_evmfs_address}/${_evmfs_ns}"
 _evmfs_uri="${_evmfs_dir}/${_sum}"
 _evmfs_src="${_tarfile}::${_evmfs_uri}"
 _bundle_uri="${_evmfs_dir}/${_bundle_sum}"
-_bundle_src="${_tarfile}::${_evmfs_npm_uri}"
+_bundle_src="${_tarfile}::${_bundle_uri}"
 _evmfs_npm_uri="${_evmfs_dir}/${_npm_sum}"
 _evmfs_npm_src="${_tarfile}::${_evmfs_npm_uri}"
 _evmfs_sig_uri="${_evmfs_dir}/${_sig_sum}"
@@ -224,8 +266,21 @@ elif [[ "${_evmfs}" == "false" ]]; then
   if [[ "${_npm}" == "true" ]]; then
     _uri="${_npm_http}/@${_ns}/${_pkg}/-/${_tarfile}"
   elif [[ "${_npm}" == "false" ]]; then
-    _uri="${url}"
+    if [[ "${_tag_name}" == 'pkgver' ]]; then
+      if [[ "${_git_http}" == "gitlab" ]]; then
+        _uri="${url}/archive/refs/tags/${_tag}.${_archive_format}"
+      fi
+    elif [[ "${_tag_name}" == "commit" ]]; then
+      if [[ "${_git_http}" == "github" ]]; then
+        _uri="${url}/archive/${_commit}.${_archive_format}"
+      elif [[ "${_git_http}" == "gitlab" ]]; then
+        _uri="${url}/-/archive/${_commit}/${_tarname}.${_archive_format}"
+      fi
+    fi
   fi
+fi
+if [[ "${_npm}" == "true" ]]; then
+  _tarfile="${_npm_tarfile}"
 fi
 _src="${_tarfile}::${_uri}"
 source+=(
@@ -291,9 +346,9 @@ build() {
     --config
       "rollup.config.mjs"
   )
-  cd \
-    "${_tarname}"
   if [[ "${_npm}" == "false" ]]; then
+    cd \
+      "${_tarname}"
     npm \
       install
     rollup \
