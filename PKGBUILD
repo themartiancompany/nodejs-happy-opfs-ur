@@ -61,30 +61,46 @@ if [[ ! -v "_evmfs" ]]; then
   fi
 fi
 _node="nodejs"
-if [[ "${_os}" == "Android" ]]; then
-  # This will have to be removed when we
-  # will have non-termux missing-provides bugged
-  # life and dogeos android nodejs and nodejs-lts
-  # builds.
-  _node_lts="$( \
-    ( pacman \
-       -Q \
-       "nodejs-lts" \
-       2>"/dev/null" || \
-      pacman \
-        -Q \
-        "nodejs" ) | \
-      awk \
-        '{print $1}' \
-      2>/dev/null)"
-  if [[ "${_node_lts}" != "" ]]; then
-    _node="nodejs-lts"
+if [[ ! -v "_lts" ]]; then
+  _lts="false"
+  if [[ "${_os}" == "Android" ]]; then
+    # This will have to be removed when we
+    # will have non-termux missing-provides bugged
+    # life and dogeos android nodejs and nodejs-lts
+    # builds.
+    _node_lts="$( \
+      ( pacman \
+         -Q \
+         "nodejs-lts" \
+         2>"/dev/null" || \
+        pacman \
+          -Q \
+          "nodejs" ) | \
+        awk \
+          '{print $1}' \
+        2>/dev/null)"
+    if [[ "${_node_lts}" != "" ]]; then
+      _lts="true"
+    fi
+  fi
+fi
+if [[ ! -v "_node_pkg" ]]; then
+  _node_pkg="${_node}"
+  if [[ "${_lts}" == "true" ]]; then
+    _node_pkg="${_node}-lts"
   fi
 fi
 if [[ ! -v "_npm" ]]; then
   _npm="false"
   if [[ "${_os}" == "Android" ]]; then
     _npm="true"
+  fi
+fi
+if [[ ! -v "_make" ]]; then
+  if [[ "${_npm}" == "false" ]]; then
+    _make="true"
+  elif [[ "${_npm}" == "true" ]]; then
+    _make="false"
   fi
 fi
 if [[ ! -v "_git_http" ]]; then
@@ -153,7 +169,7 @@ license=(
   'GPL3'
 )
 depends=(
-  "${_node}"
+  "${_node_pkg}"
   "${_node}-std"
 )
 provides=(
@@ -178,18 +194,30 @@ optdepends=(
 )
 makedepends=(
   "${_node}-std"
-  "npm"
 )
+if [[ "${_npm}" == "true" ]]; then
+  makedepends+=(
+    "npm"
+  )
+elif [[ "${_npm}" == "false" ]]; then
+  depends+=(
+    "${_node}-std"
+  )
+  makedepends+=(
+    "${_node}-std"
+    # "node-run"
+    "${_node}-rollup"
+    "${_node}-rollup-plugin-dts"
+  )
+fi
+if [[ "${_make}" == "true" ]]; then
+  makedepends+=(
+    "make"
+  )
+fi
 if [[ "${_git}" == "true" ]]; then
   makedepends+=(
     "git"
-  )
-fi
-if [[ "${_npm}" == "false" ]]; then
-  makedepends+=(
-    "node-run"
-    "${_node}-rollup"
-    "${_node}-rollup-plugin-dts"
   )
 fi
 if [[ "${_os}" == "Android" ]]; then
@@ -372,9 +400,13 @@ build() {
 
 package_nodejs-happy-opfs() {
   local \
-    _npm_options=() \
+    _make_opts=() \
+    _npm_opts=() \
     _find_opts=()
-  _npm_options=(
+  _make_opts+=(
+    DESTDIR="${pkgdir}"
+  )
+  _npm_opts+=(
     -g 
     # --user 
     #   root 
@@ -390,17 +422,24 @@ package_nodejs-happy-opfs() {
         '{}'
         +
   )
-  npm \
-    install \
-    "${_npm_options[@]}" \
-    "${srcdir}/${_ns}-${_pkg}-${pkgver}.tgz"
-  rm \
-    -fr \
-      "${pkgdir}/usr/etc"
-  # Fix npm derp
-  find \
-    "${pkgdir}/usr" \
-    "${_find_opts[@]}"
+  if [[ "${_npm}" == "true" ]]; then
+    npm \
+      install \
+      "${_npm_opts[@]}" \
+      "${srcdir}/${_ns}-${_pkg}-${pkgver}.tgz"
+    rm \
+      -fr \
+        "${pkgdir}/usr/etc"
+    # Fix npm derp
+    find \
+      "${pkgdir}/usr" \
+      "${_find_opts[@]}"
+  fi
+  if [[ "${_make}" == "true" ]]; then
+    make \
+      "${_make_opts[@]}" \
+      install
+  fi
 }
 
 package_nodejs-happy-opfs-examples() {
