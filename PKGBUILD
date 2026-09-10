@@ -92,7 +92,8 @@ if [[ ! -v "_node_pkg" ]]; then
 fi
 if [[ ! -v "_npm" ]]; then
   _npm="false"
-  if [[ "${_os}" == "Android" ]]; then
+  if [[ "${_os}" == "Android" || \
+        "${_evmfs}" == "false" ]]; then
     _npm="true"
   fi
 fi
@@ -157,7 +158,7 @@ _pkgdesc=(
 pkgdesc="${_pkgdesc[*]}"
 pkgver=1.8.8
 _commit="7129dbaff68d456e7cbdd244876de0a0c4c58da9"
-pkgrel=2
+pkgrel=3
 arch=(
   'any'
 )
