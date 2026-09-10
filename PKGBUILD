@@ -157,7 +157,7 @@ _pkgdesc=(
 pkgdesc="${_pkgdesc[*]}"
 pkgver=1.8.8
 _commit="7129dbaff68d456e7cbdd244876de0a0c4c58da9"
-pkgrel=1
+pkgrel=2
 arch=(
   'any'
 )
